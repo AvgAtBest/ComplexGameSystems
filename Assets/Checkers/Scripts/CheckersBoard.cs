@@ -37,8 +37,8 @@ namespace Checkers
                 // Loop through Columns
                 for (int x = 0; x < 8; x += 2)
                 {
-                    //Generate Piece
-                    GeneratePiece(x, y, true);
+                    //Generate white pieces in the oddrow. Ternary checks the columns + 1. Marks as True for isWhite, so white pieces spawn
+                    GeneratePiece(oddRow ? x : x + 1, y, true);
                 }
             }
             // Generate Black Team
@@ -48,8 +48,8 @@ namespace Checkers
                 //Loop through columns
                 for (int x = 0; x < 8; x += 2)
                 {
-                    //Generate Piece
-                    GeneratePiece(x, y, false);
+                    //Generate black pieces in the oddrow. Ternary checks the columns + 1, Marks as false for isWhite, so spawns black pieces
+                    GeneratePiece(oddRow ? x : x + 1, y, false);
                 }
             }
         }
