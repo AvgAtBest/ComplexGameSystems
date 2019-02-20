@@ -246,15 +246,71 @@ namespace Checkers
             int x2 = (int)end.x;
             int y2 = (int)end.y;
 
+            //Rule #1 - Is the start the same as the end
             if(start == end)
             {
                 return true;
             }
+            //Rule #2 - if you are moving on top of another piece
             if(pieces[x2, y2])
             {
                 return false;
             }
-            return true;
+            //Rule #3 - Detect if we are moving diagonal & forwards / backwards
+            #region Old Code
+            //int xLocation = x1 - x2;
+            //int yLocation = y1 - y2;
+
+            //if(Mathf.Abs(xLocation) == 1 && Mathf.Abs(yLocation) == 1)
+            //{
+            //    return true;
+            //}
+            //if(xLocation == 0 || yLocation == 0)
+            //{
+            //    return false;
+            //}
+            //if (xLocation <= 1 || yLocation <= 1)
+            //{
+            //    return false;
+            //}
+            #endregion
+            int locationX = Mathf.Abs(x1 - x2);
+            int locationY = y2 - y1;
+            //rule for white pieces
+            if (selectedPiece.isWhite || selectedPiece.isKing)
+            {
+                //Check if we're moving diagonally right
+                if (locationX == 1 && locationY == 1)
+                {
+                    //valid move
+                    return true;
+                }
+
+            }
+            //Rule for Selecting black pieces
+            if(!selectedPiece.isWhite || selectedPiece.isKing)
+            {
+                //Check if we're moving diagonally right
+                if (locationX == 1 && locationY == -1)
+                {
+                    //this is a valid move
+                    return true;
+                }
+                else if (locationX == 2 || locationY == 2)
+                {
+                    if(pieces[x1,y1] != null)
+                    {
+                        if (pieces[x1, y1].isWhite != selectedPiece.isWhite)
+                        {
+
+                        }
+                    }
+                }
+
+            }
+
+            //Dont do that
+            return false;
         }
         #endregion
     }
