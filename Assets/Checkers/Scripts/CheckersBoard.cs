@@ -223,11 +223,15 @@ namespace Checkers
                 if (ValidMove(start, end))
                 {
                     MovePiece(selectedPiece, x2, y2);
+
                 }
                 else
                 {
                     MovePiece(selectedPiece, x1, y1);
+
                 }
+                EndTurn();
+
             }
         }
         #endregion
@@ -235,7 +239,7 @@ namespace Checkers
         private bool OutOfBounds(int x, int y)
         {
             return x < 0 || x >= 8 || y < 0 || y >= 8;
-            
+
         }
         #endregion
         #region Valid Move
@@ -247,12 +251,12 @@ namespace Checkers
             int y2 = (int)end.y;
 
             //Rule #1 - Is the start the same as the end
-            if(start == end)
+            if (start == end)
             {
                 return true;
             }
             //Rule #2 - if you are moving on top of another piece
-            if(pieces[x2, y2])
+            if (pieces[x2, y2])
             {
                 return false;
             }
@@ -285,10 +289,23 @@ namespace Checkers
                     //valid move
                     return true;
                 }
+                //if moving diagonally two spaces
+                else if (locationX == 2 && locationY == 2)
+                {
+                    //get the piece between the move
+                    Piece betweenPiece = GetPieceBetween(start, end);
+                    //if there is a piece, and the selcted piece  isnt white
+                    if (betweenPiece != null && betweenPiece.isWhite != selectedPiece.isWhite)
+                    {
+                        RemovePiece(betweenPiece);
+                        //valid move
+                        return true;
+                    }
+                }
 
             }
             //Rule for Selecting black pieces
-            if(!selectedPiece.isWhite || selectedPiece.isKing)
+            if (!selectedPiece.isWhite || selectedPiece.isKing)
             {
                 //Check if we're moving diagonally right
                 if (locationX == 1 && locationY == -1)
@@ -296,22 +313,68 @@ namespace Checkers
                     //this is a valid move
                     return true;
                 }
-                else if (locationX == 2 || locationY == 2)
+                //if moving two spaces diagonally
+                else if (locationX == 2 && locationY == -2)
                 {
-                    if(pieces[x1,y1] != null)
+                    //gets the piece that is between move
+                    Piece betweenPiece = GetPieceBetween(start, end);
+                    //if there is a piece and the selected piece is not white
+                    if (betweenPiece != null && betweenPiece.isWhite != selectedPiece.isWhite)
                     {
-                        if (pieces[x1, y1].isWhite != selectedPiece.isWhite)
-                        {
+                        RemovePiece(betweenPiece);
 
-                        }
+                        //your allowed to move
+                        return true;
+
                     }
                 }
 
             }
 
+
             //Dont do that
             return false;
         }
         #endregion
+        private Piece GetPieceBetween(Vector2 start, Vector2 end)
+        {
+            int xIndex = (int)(start.x + end.x) / 2;
+            int yIndex = (int)(start.y + end.y) / 2;
+            return pieces[xIndex, yIndex];
+        }
+        private void RemovePiece(Piece pieceToRemove)
+        {
+            pieces[pieceToRemove.x, pieceToRemove.y] = null;
+            DestroyImmediate(pieceToRemove.gameObject);
+
+        }
+        private void EndTurn()
+        {
+
+            CheckForKing();
+
+        }
+        private void CheckForKing()
+        {
+            //Gets th end drag location (mouse)
+            int x = (int)endDrag.x;
+            int y = (int)endDrag.y;
+            //check if there is a selected piece
+
+            //if the selected piece is white and reached the end of the board
+            if (selectedPiece && !selectedPiece.isKing)
+            {
+                {
+                    bool whiteNeedsKing = selectedPiece.isWhite && y == 7;
+                    bool blackNeedsKing = !selectedPiece.isWhite && y == 0;
+                    if (whiteNeedsKing || blackNeedsKing)
+                    {
+                        selectedPiece.isKing = true;
+                    }
+                }
+
+            }
+        }
+
     }
 }
