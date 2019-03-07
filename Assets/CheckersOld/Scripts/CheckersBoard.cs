@@ -15,11 +15,11 @@ namespace Checkers
         public Transform checkersParent;
         public float rayDistance = 1000f;
         public LayerMask hitLayers;
-        public Piece[,] pieces = new Piece[8, 8];
+        public PieceOld[,] pieces = new PieceOld[8, 8];
 
         private bool isWhiteTurn = true, hasKilled;
         private Vector2 mouseOver, startDrag, endDrag;
-        private Piece selectedPiece = null;
+        private PieceOld selectedPiece = null;
         #endregion
         #region start
         void Start()
@@ -70,7 +70,7 @@ namespace Checkers
             GameObject clone = Instantiate(prefab, checkersParent);
             //Reposition clone
             //gets the piece component
-            Piece p = clone.GetComponent<Piece>();
+            PieceOld p = clone.GetComponent<PieceOld>();
             //Updates piece x and y with current location
             p.x = x;
             p.y = y;
@@ -113,7 +113,7 @@ namespace Checkers
         /// <param name="p">The piece to move</param>
         /// <param name="x">X location</param>
         /// <param name="y">y location</param>
-        private void MovePiece(Piece p, int x, int y)
+        private void MovePiece(PieceOld p, int x, int y)
         {
             //updates array
             pieces[p.x, p.y] = null;
@@ -131,7 +131,7 @@ namespace Checkers
         /// <param name="x">x coordinate</param>
         /// <param name="y">y coordinate</param>
         /// <returns></returns>
-        private Piece SelectPiece(int x, int y)
+        private PieceOld SelectPiece(int x, int y)
         {
 
             //check if x and Y is out of bounds
@@ -139,7 +139,7 @@ namespace Checkers
                 return null;
 
             //get piece at x and Y location
-            Piece piece = pieces[x, y];
+            PieceOld piece = pieces[x, y];
             //check that it isnt null
             if (piece)
                 return piece;
@@ -177,7 +177,7 @@ namespace Checkers
         /// Drags the selected piece using raycast location
         /// </summary>
         /// <param name="p"></param>
-        private void DragPiece(Piece selected)
+        private void DragPiece(PieceOld selected)
         {
             Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -293,7 +293,7 @@ namespace Checkers
                 else if (locationX == 2 && locationY == 2)
                 {
                     //get the piece between the move
-                    Piece betweenPiece = GetPieceBetween(start, end);
+                    PieceOld betweenPiece = GetPieceBetween(start, end);
                     //if there is a piece, and the selcted piece  isnt white
                     if (betweenPiece != null && betweenPiece.isWhite != selectedPiece.isWhite)
                     {
@@ -317,7 +317,7 @@ namespace Checkers
                 else if (locationX == 2 && locationY == -2)
                 {
                     //gets the piece that is between move
-                    Piece betweenPiece = GetPieceBetween(start, end);
+                    PieceOld betweenPiece = GetPieceBetween(start, end);
                     //if there is a piece and the selected piece is not white
                     if (betweenPiece != null && betweenPiece.isWhite != selectedPiece.isWhite)
                     {
@@ -336,13 +336,13 @@ namespace Checkers
             return false;
         }
         #endregion
-        private Piece GetPieceBetween(Vector2 start, Vector2 end)
+        private PieceOld GetPieceBetween(Vector2 start, Vector2 end)
         {
             int xIndex = (int)(start.x + end.x) / 2;
             int yIndex = (int)(start.y + end.y) / 2;
             return pieces[xIndex, yIndex];
         }
-        private void RemovePiece(Piece pieceToRemove)
+        private void RemovePiece(PieceOld pieceToRemove)
         {
             pieces[pieceToRemove.x, pieceToRemove.y] = null;
             DestroyImmediate(pieceToRemove.gameObject);

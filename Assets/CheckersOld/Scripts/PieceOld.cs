@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Checkers
 {
 
-    public class Piece : MonoBehaviour
+    public class PieceOld : MonoBehaviour
     {
         public bool isWhite, isKing;
         public int x, y;
