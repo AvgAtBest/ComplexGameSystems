@@ -99,7 +99,8 @@ namespace Checkers2
         bool IsOutOfBounds(Vector2Int cell)
         {
             //makes a piece unable to be moved further out of the grid columns or rows
-            return cell.x < 0 || cell.x >= 8 || cell.y < 0 || cell.x >= 8;
+            return cell.x < 0 || cell.x >= 8 ||
+                   cell.y < 0 || cell.y >= 8;
         }
 
         //selects a piece on the 2d grid and returns it
@@ -152,6 +153,8 @@ namespace Checkers2
         }
         private void Update()
         {
+            //TEMP PLACED
+            DetectForcedMoves();
             MouseOver();
             //if left mouse button is held down
             if (Input.GetMouseButtonDown(0))
@@ -179,6 +182,12 @@ namespace Checkers2
             //Get the selected Pieces cell
             Vector2Int startCell = selected.cell;
 
+            if (IsOutOfBounds(desiredCell))
+            {
+                MovePiece(selected, startCell);
+                Debug.Log("<color=red>Invalid - You cannot move outside the map</color>");
+                return false;
+            }
             //is it not a valid move
             if (!ValidMove(selected, desiredCell))
             {
@@ -196,8 +205,6 @@ namespace Checkers2
         bool ValidMove(Piece selected, Vector2Int desiredCell)
         {
             #region Rule #1 = is piece out of bounds?
-            //get direction of movement for some of the next few rules
-            Vector2Int direction = selected.cell - desiredCell;
             //is the desired cell out of bounds
             if (IsOutOfBounds(desiredCell))
             {
@@ -219,6 +226,66 @@ namespace Checkers2
             {
                 Debug.Log("<color=red>Invalid - You can't go on top of other pieces</color>");
                 return false;
+            }
+            #endregion
+            #region Rule #04 - Is there any forced moves
+            //is there any forced moves?
+            if (HasForcedMoves(selected))
+            {
+                if (!IsForcedMove(selected, desiredCell))
+                {
+                    Debug.Log("<color=red>Invalid - You have to use forced moves!</color>");
+                    return false;
+                }
+            }
+            #endregion
+            //get direction of movement for some of the next few rules
+            Vector2Int direction = selected.cell - desiredCell;
+            #region Rule #05 - Is the selected cell being dragged two cells over?
+            //is the piece moved two spaces?
+            if (direction.magnitude > 2)
+            {
+                if (forcedMoves.Count == 0)
+                {
+                    Debug.Log("<color=red>Invalid - You can only move two spaces if there are forced moves on selected piece</color>");
+
+                    return false;
+                }
+            }
+            #endregion
+            #region Rule #06 - Is the piece not getting in a diagonal Cell
+            //is the playert not moving diagonally
+            if (Mathf.Abs(direction.x) != Mathf.Abs(direction.y))
+            {
+                Debug.Log("<color=red>Invalid - You have to be moving diagonally</color>");
+                return false;
+            }
+            #endregion
+            #region Rule #07 - Is the piece moving in the right direction?
+            //if the selected Piece isnt kinged
+            if (!selectedPiece.isKing)
+            {
+                //if the selected piece is white
+                if (selectedPiece.isWhite)
+                {
+                    //is it moving up
+                    if (direction.y > 0)
+                    {
+                        Debug.Log("<color=red>Invalid - Cant move a white piece backwards</color>");
+                        return false;
+                    }
+                }
+                //is the selected Piece red?
+                else
+                {
+
+                    //if it is going down
+                    if (direction.y < 0)
+                    {
+                        Debug.Log("<color=red>Invalid - Cant move a red piece backwards</color>");
+                        return false;
+                    }
+                }
             }
             #endregion
             return true;
@@ -334,6 +401,77 @@ namespace Checkers2
                     }
                 }
             }
+        }
+        //Check if a piece has forced pieces
+        bool HasForcedMoves(Piece selected)
+        {
+            //Loop through all forced moved
+            foreach (var move in forcedMoves)
+            {
+                //Get piece for forced move
+                Piece piece = move.Key;
+
+                //Is the piece being forced to move the same color as selected Piece?
+                if (piece.isWhite == selected.isWhite)
+                {
+                    //Our selected piece has forced moves
+                    return true;
+
+                }
+            }
+            //Does not have any forced moves
+            return false;
+        }
+        //Checks if the selected piece has forced moves
+        bool IsForcedMove(Piece selected, Vector2Int desiredCell)
+        {
+            //Does the selected piece have a forced move
+            if (forcedMoves.ContainsKey(selected))
+            {
+                //is there any forced moves for this piece
+                if (forcedMoves[selected].Contains(desiredCell))
+                {
+                    //it is a forced move
+                    return true;
+                }
+            }//it is a not forced move
+            return false;
+        }
+
+        //remove Piece
+        void RemovePiece(Piece pieceToRemove)
+        {
+
+            Vector2Int cell = pieceToRemove.cell;
+            //Clear cell in 2d Array
+            pieces[cell.x, cell.y] = null;
+            //Destroy the piece immediately
+            DestroyImmediate(pieceToRemove.gameObject);
+        }
+        //Calculates & returns the piece between start and end locations
+        Piece GetPieceBetween(Vector2Int start, Vector2Int end)
+        {
+
+            Vector2Int cell = Vector2Int.zero;
+            cell.x = (start.x + end.x) / 2;
+            cell.y = (start.y + end.y) / 2;
+            return GetPiece(cell);
+        }
+        bool IsPieceTaken(Piece selected)
+        {
+            //Get the piece in between move
+            Piece pieceBetween = GetPieceBetween(selected.oldCell, selected.cell);
+            //if there is a piece between and the piece isnt the same color
+            if(pieceBetween != null && pieceBetween.isWhite != selected.isWhite)
+            {
+                //Destroy the piece between
+                RemovePiece(pieceBetween);
+                //piece taken
+                return true;
+
+            }
+            //piece not taken
+            return false;
         }
     }
 }
